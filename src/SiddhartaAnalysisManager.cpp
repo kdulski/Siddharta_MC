@@ -1,6 +1,5 @@
 #include "../include/SiddhartaAnalysisManager.h"
 #include "../include/SiddhartaHisto.h"
-#include "../include/SiddhartaCard.h"
 
 #include <G4TrajectoryContainer.hh>
 #include <G4UnitsTable.hh>
@@ -36,6 +35,8 @@ SiddhartaAnalysisManager::SiddhartaAnalysisManager()
   detectorThresE = 10*keV;
   pulseWidth = 1.*microsecond;
   histo = new SiddhartaHisto();
+  mycard = SiddhartaCard::getInstance();
+  iniKaonMomCond = mycard->variables["initialKaonMomentumCheck"];
   bookHisto();
 }
 
@@ -198,7 +199,7 @@ void SiddhartaAnalysisManager::EndOfEvent(const G4Event* evt)
     histo->fillHisto3("9",histo->ntuData.XYZstopKP[0],histo->ntuData.XYZstopKP[2],histo->ntuData.XYZstopKP[1],1.); // with kaon trigger cut
   }
 
-  SiddhartaCard* mycard = SiddhartaCard::getInstance();
+ //SiddhartaCard* mycard = SiddhartaCard::getInstance();
   int SiddhartaSetup = mycard->variables["SiddhartaSetupVersion"];
 
   G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
@@ -403,4 +404,35 @@ void SiddhartaAnalysisManager::AddIsotope(G4double pid,G4double weight, G4double
   histo->fillTuple(1,1,time/second);
   histo->fillTuple(1,2,weight);
   histo->addRow(1);
+}
+
+bool SiddhartaAnalysisManager::CheckKaonIniMom(G4ThreeVector iniPos, G4ThreeVector momentum)
+{
+  int condition = true;
+  if (iniKaonMomCond) {
+    std::vector<G4ThreeVector> lumiPlane;
+    if (iniKaonMomCond < 0) {
+      if (momentum.x() > 0)
+        return false;
+
+      lumiPlane = mycard->GetLumiAntiBoostPosition();
+    } else {
+      if (momentum.x() < 0)
+        return false;
+
+      lumiPlane = mycard->GetLumiBoostPosition();
+    }
+
+    if (lumiPlane.size() == 2) {
+      G4double lumiPlaneXMax = lumiPlane.at(0).x();
+      G4double distanceFromIniPos = lumiPlaneXMax - iniPos.x();
+      G4double mult = distanceFromIniPos/momentum.x();
+      G4ThreeVector potentialKaonPos = iniPos + mult*momentum;
+
+      if (!(potentialKaonPos.y() > lumiPlane.at(0).y() && potentialKaonPos.y() < lumiPlane.at(1).y() &&
+          potentialKaonPos.z() > lumiPlane.at(0).z() && potentialKaonPos.z() < lumiPlane.at(1).z()))
+        condition = false;
+    }
+  }
+  return condition;
 }

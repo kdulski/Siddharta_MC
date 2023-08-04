@@ -1488,6 +1488,10 @@ G4VPhysicalVolume* SiddhartaDetectorConstruction::Construct()
   logicLumiDetectorAntiBoostPC->SetVisAttributes(G4Colour(1.,1.,0.));
   logicLumiDetectorAntiBoost->SetSensitiveDetector(LDAntiBoost_SD);
 
+// Rotation 90deg around Y axis -> Z = X, X = -Z
+  mycard->SetLumiBoostPosition(G4ThreeVector(posx_lumi_boost, 0., 0), G4ThreeVector(0.5*dz_lumi, 0.5*dy_lumi, 0.5*dx_lumi));
+  mycard->SetLumiAntiBoostPosition(G4ThreeVector(-posx_lumi_anti, 0., 0), G4ThreeVector(0.5*dz_lumi, 0.5*dy_lumi,0.5*dx_lumi ));
+
 ////////////////////////////////
 /// KLIMAX AntiBoost PART
 ////////////////////////////////

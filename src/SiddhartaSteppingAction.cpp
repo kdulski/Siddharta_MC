@@ -31,6 +31,11 @@ void SiddhartaSteppingAction::UserSteppingAction(const G4Step* gst1)
     if (evid2 != prev_evid2) {
       analysis->histo->fillHistogram("kaonParticles", 1, doubleCheck(1), doubleCheck(1));
       prev_evid2 = evid2;
+
+      bool initialMomentumConditionOK = analysis->CheckKaonIniMom(pos_km_bp, gst1->GetTrack()->GetMomentum());
+
+      if (!initialMomentumConditionOK)
+        G4RunManager::GetRunManager()->AbortEvent();
     }
 
     if (Kinener <= 1001.*eV) {

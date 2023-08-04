@@ -15,7 +15,8 @@
 //----------------------------------------------------------------------------
 //
 
-#include "SiddhartaEnergyDeposition.h"
+#include "../include/SiddhartaEnergyDeposition.h"
+#include "../include/SiddhartaCard.h"
 
 #include <G4SystemOfUnits.hh>
 #include <G4Event.hh>
@@ -67,6 +68,8 @@ public:
   void SetPulseWidth(G4double val) {pulseWidth = val;};
   G4double GetPulseWidth () const {return pulseWidth;};
 
+  bool CheckKaonIniMom(G4ThreeVector iniPos, G4ThreeVector momentum);
+
   SiddhartaHisto*  histo;
   G4bool YesHistos;
   G4double SDD_pos[384][3];//   G4double SDD_pos[144][3];
@@ -78,6 +81,7 @@ private:
   ~SiddhartaAnalysisManager();
 
   static SiddhartaAnalysisManager* fManager;
+  SiddhartaCard* mycard;
 
   G4int verbose;
   G4int nEvt1;
@@ -90,6 +94,8 @@ private:
   G4double targetThresE;
   G4double detectorThresE;
   G4double pulseWidth;
+
+  G4int iniKaonMomCond;
 
   std::vector <SiddhartaEnergyDeposition> Edepo;
 };

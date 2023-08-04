@@ -2,6 +2,7 @@
 #define SiddhartaCard_h 1
 
 #include <G4SystemOfUnits.hh>
+#include <G4ThreeVector.hh>
 #include <globals.hh>
 
 #include <vector>
@@ -9,6 +10,8 @@
 
 #include <iostream>
 #include <fstream>
+
+typedef CLHEP::Hep3Vector G4ThreeVector;
 
 class SiddhartaCard
 {
@@ -32,6 +35,9 @@ public:
   void SetNoDataStatus(bool status) {nodata = status;};
   void SetEventMult(double status) {eventmult = status;};
 
+  void SetLumiBoostPosition(G4ThreeVector middle, G4ThreeVector sizes);
+  void SetLumiAntiBoostPosition(G4ThreeVector middle, G4ThreeVector sizes);
+
   void AddDoneByOne() {done++;};
   
   std::string GetCardFileName() {
@@ -48,7 +54,9 @@ public:
   int GetEventMult() {return eventmult;};
 
   std::vector<double> GetCustomDensities() {return customDensitiesStep;};
-  
+  std::vector<G4ThreeVector> GetLumiBoostPosition() {return lumiBoostPlane;};
+  std::vector<G4ThreeVector> GetLumiAntiBoostPosition() {return lumiAntiBoostPlane;};
+
   void OpenBeam(char *name){return inbeam.open(name);};
   void CloseBeam(){return inbeam.close();}
   bool BeamOpen(){return inbeam.is_open();}
@@ -74,6 +82,9 @@ private:
   int eventmult;
 
   std::vector<double> customDensitiesStep;
+// 4 vertices of the plane of lumi
+  std::vector<G4ThreeVector> lumiBoostPlane;
+  std::vector<G4ThreeVector> lumiAntiBoostPlane;
 };
 
 #endif

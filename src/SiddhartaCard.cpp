@@ -60,7 +60,8 @@ void SiddhartaCard::Initialization()
   variables["densityAddCustomGradientDensity"] = 0; // in percent of liquid density
   variables["kaonBottomBoostShift"] = 0; // in cm
   variables["kaonBottomVerticalShift"] = 0; // in cm
-  variables["activeDetMode"]= 1; // 1 = SIDDHARTA, 2 = CZT, 3 = HPGE, 4 = All, 5 = SIDDHARTA&&CZT, 6 = SIDDHARTA&&HPGE, 7 = CZT&&HPGE					    
+  variables["activeDetMode"]= 1; // 1 = SIDDHARTA, 2 = CZT, 3 = HPGE, 4 = All, 5 = SIDDHARTA&&CZT, 6 = SIDDHARTA&&HPGE, 7 = CZT&HPGe
+  variables["initialKaonMomentumCheck"] = 0; // -1 Anti Boost, 0 No check, 1 Boost
   customDensitiesStep.clear();
 }
 
@@ -103,3 +104,32 @@ void SiddhartaCard::ReadCard()
   }
   indata.close();
 }
+
+void SiddhartaCard::SetLumiBoostPosition(G4ThreeVector middle, G4ThreeVector sizes)
+{
+//Ignoring Y axis
+  G4ThreeVector temp;
+  temp.setX(middle.x() - sizes.x());
+  temp.setY(middle.y() - sizes.y());
+  temp.setZ(middle.z() - sizes.z());
+  lumiBoostPlane.push_back(temp);
+  temp.setX(middle.x() - sizes.x());
+  temp.setY(middle.y() + sizes.y());
+  temp.setZ(middle.z() + sizes.z());
+  lumiBoostPlane.push_back(temp);
+}
+
+void SiddhartaCard::SetLumiAntiBoostPosition(G4ThreeVector middle, G4ThreeVector sizes)
+{
+//Ignoring Y axis
+  G4ThreeVector temp;
+  temp.setX(middle.x() + sizes.x());
+  temp.setY(middle.y() - sizes.y());
+  temp.setZ(middle.z() - sizes.z());
+  lumiAntiBoostPlane.push_back(temp);
+  temp.setX(middle.x() + sizes.x());
+  temp.setY(middle.y() + sizes.y());
+  temp.setZ(middle.z() + sizes.z());
+  lumiAntiBoostPlane.push_back(temp);
+}
+

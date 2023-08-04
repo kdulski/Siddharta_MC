@@ -180,23 +180,22 @@ void SiddhartaAnalysisManager::EndOfEvent(const G4Event* evt)
       }
     }
   }
-  if ( histo->ntuData.EnergyDepKMTop > 3000000 ) {
-    histo->fillHisto("82",histo->ntuData.EnergyDepKMTop*eV,1.);
+  if (histo->ntuData.EnergyDepKMTop > 3000000) {
+    histo->fillHisto("82", histo->ntuData.EnergyDepKMTop*eV, 1.);
   }
-  if ( histo->ntuData.EnergyDepKMTop > 3e6 &&
-       histo->ntuData.EnergyDepKMTop < 7e6 &&
-       histo->ntuData.EnergyDepKMBottom > 3e6 &&
-       histo->ntuData.EnergyDepKMBottom < 7e6 &&
-       histo->ntuData.TimeKMTop > 1.2         &&
-       histo->ntuData.TimeKMTop < 2.          &&
-       histo->ntuData.TimeKMBottom > 1.2         &&
-       histo->ntuData.TimeKMBottom < 2.          &&
-       histo->ntuData.XYZKMBottom[0] > -50.    &&
-       histo->ntuData.XYZKMBottom[0] <  50.
-          )
+  if (histo->ntuData.EnergyDepKMTop > 3e6 &&
+      histo->ntuData.EnergyDepKMTop < 7e6 &&
+      histo->ntuData.EnergyDepKMBottom > 3e6 &&
+      histo->ntuData.EnergyDepKMBottom < 7e6 &&
+      histo->ntuData.TimeKMTop > 1.2         &&
+      histo->ntuData.TimeKMTop < 2.          &&
+      histo->ntuData.TimeKMBottom > 1.2         &&
+      histo->ntuData.TimeKMBottom < 2.          &&
+      histo->ntuData.XYZKMBottom[0] > -50.    &&
+      histo->ntuData.XYZKMBottom[0] <  50.)
   {
-      histo->fillHisto3("8",histo->ntuData.XYZstopK[0],histo->ntuData.XYZstopK[2],histo->ntuData.XYZstopK[1],1.); // with kaon trigger cut
-      histo->fillHisto3("9",histo->ntuData.XYZstopKP[0],histo->ntuData.XYZstopKP[2],histo->ntuData.XYZstopKP[1],1.); // with kaon trigger cut
+    histo->fillHisto3("8",histo->ntuData.XYZstopK[0],histo->ntuData.XYZstopK[2],histo->ntuData.XYZstopK[1],1.); // with kaon trigger cut
+    histo->fillHisto3("9",histo->ntuData.XYZstopKP[0],histo->ntuData.XYZstopKP[2],histo->ntuData.XYZstopKP[1],1.); // with kaon trigger cut
   }
 
   SiddhartaCard* mycard = SiddhartaCard::getInstance();
@@ -204,6 +203,7 @@ void SiddhartaAnalysisManager::EndOfEvent(const G4Event* evt)
 
   G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
   G4int n_trajectories = 0;
+
   if (trajectoryContainer)
     n_trajectories = trajectoryContainer->entries();
 
@@ -214,85 +214,109 @@ void SiddhartaAnalysisManager::EndOfEvent(const G4Event* evt)
 
   int ACTIVE_DET_ID = mycard->variables["activeDetMode"];
 
-  if (histo->ntuData.nHitSDD > 0 || histo->ntuData.NbAnti > 0 || histo->ntuData.EnergyDepKMTop > 0
-             || histo->ntuData.EnergyDepKMBottom > 0
-             || histo->ntuData.EnergyDepLMAntiBoost > 0
-             || histo->ntuData.EnergyDepLMBoost > 0) 
+  if (histo->ntuData.nHitSDD > 0 || histo->ntuData.NbAnti > 0 || histo->ntuData.EnergyDepKMTop > 0 ||
+      histo->ntuData.EnergyDepKMBottom > 0 || histo->ntuData.EnergyDepLMAntiBoost > 0 || histo->ntuData.EnergyDepLMBoost > 0) 
   {
-	  int Anti_size = 9;
-	  if ( SiddhartaSetup == 2 || SiddhartaSetup == 6 )
-		  Anti_size = 9;
-	  if ( SiddhartaSetup == 7 || SiddhartaSetup == 8 || SiddhartaSetup == 2020 || SiddhartaSetup == 2023)
-		  Anti_size = 17;
+    int Anti_size = 9;
 
-	  G4String pname ="";
-	  for (G4int j=0; j<histo->ntuData.nHitSDD; j++) {
-		  for (G4int i=0; i<n_trajectories; i++) {
-			  G4Trajectory* trj = (G4Trajectory*)(*(trajectoryContainer))[i];
-			  pname = trj->GetParticleName();
-			  int ilen = strlen(pname);
+    if (SiddhartaSetup == 2 || SiddhartaSetup == 6)
+      Anti_size = 9;
 
-			  if (trj->GetTrackID() == histo->ntuData.parentID[j]) {
-				  for(G4int k=0; k<ilen; k++) {
-					  histo->ntuData.parentName[j][k] = (pname.data())[k];
-				  }
-				  histo->ntuData.parentName[j][ilen] = '\0';
-			  }
-		  }
-	  }
+    if (SiddhartaSetup == 7 || SiddhartaSetup == 8 || SiddhartaSetup == 2020 || SiddhartaSetup == 2023)
+      Anti_size = 17;
 
-	  for (G4int i=0;i<n_trajectories;i++) {
-		  G4Trajectory* trj = (G4Trajectory*)(*(trajectoryContainer))[i];
-		  pname = trj->GetParticleName();
-		  int ilen = strlen(pname);
+    G4String pname ="";
+    for (G4int j=0; j<histo->ntuData.nHitSDD; j++) {
+      for (G4int i=0; i<n_trajectories; i++) {
+        G4Trajectory* trj = (G4Trajectory*)(*(trajectoryContainer))[i];
+        pname = trj->GetParticleName();
+        int ilen = strlen(pname);
 
-		  for (G4int l=0;l<Anti_size;l++) {
-			  if (trj->GetTrackID() == histo->ntuData.parentIDAnti[l]) {
-				  for(G4int k=0;k<ilen;k++) {
-					  histo->ntuData.parentNameAnti[l][k] = (pname.data())[k];
-				  }
-				  histo->ntuData.parentNameAnti[l][ilen] = '\0';
-			  }
-		  }
-	  }
+        if (trj->GetTrackID() == histo->ntuData.parentID[j]) {
+          for(G4int k=0; k<ilen; k++) {
+            histo->ntuData.parentName[j][k] = (pname.data())[k];
+          }
+        histo->ntuData.parentName[j][ilen] = '\0';
+        }
+      }
+    }
 
-	  sddhit = true;
+    for (G4int i=0;i<n_trajectories;i++) {
+      G4Trajectory* trj = (G4Trajectory*)(*(trajectoryContainer))[i];
+      pname = trj->GetParticleName();
+      int ilen = strlen(pname);
 
+      for (G4int l=0; l<Anti_size; l++) {
+        if (trj->GetTrackID() == histo->ntuData.parentIDAnti[l]) {
+          for(G4int k=0;k<ilen;k++) {
+            histo->ntuData.parentNameAnti[l][k] = (pname.data())[k];
+          }
+        histo->ntuData.parentNameAnti[l][ilen] = '\0';
+        }
+      }
+    }
+
+    sddhit = true;
   }
-	  if((histo->ntuData.EnergyDepLMAntiBoost>-1)||(histo->ntuData.EnergyDepKLDAntiBoost>0)||(histo->ntuData.EnergyDepKLT1AntiBoost>0)||(histo->ntuData.EnergyDepKLT2AntiBoost>0)||(histo->ntuData.EnergyDepKLBWAntiBoost>0)||(histo->ntuData.TotalEnergyDepKLCZTAntiBoost>0)) czthit = true;
-	  if((histo->ntuData.EnergyDepLMBoost>0)||(histo->ntuData.EnergyDepKLDBoost>0)||(histo->ntuData.EnergyDepKLTBoost>0)||(histo->ntuData.TotalEnergyDepKLHPGeBoost>0)) hpgehit = true;
 
-switch(ACTIVE_DET_ID)
-{
-	case 1: if(sddhit) histo->fillTuple("0"); break;
-	case 2: if(czthit) histo->fillTuple("0"); break;
-	case 3: if(hpgehit) histo->fillTuple("0"); break;
-	case 4: if(sddhit||czthit||hpgehit) histo->fillTuple("0"); break;
-	case 5: if(sddhit||czthit) histo->fillTuple("0"); break;
-	case 6: if(sddhit||hpgehit) histo->fillTuple("0"); break;
-	case 7: if(czthit||hpgehit) histo->fillTuple("0"); break;
-}
+  if ((histo->ntuData.EnergyDepLMAntiBoost>-1) || (histo->ntuData.EnergyDepKLDAntiBoost>0) || (histo->ntuData.EnergyDepKLT1AntiBoost>0) || 
+     (histo->ntuData.EnergyDepKLT2AntiBoost>0) || (histo->ntuData.EnergyDepKLBWAntiBoost>0) || (histo->ntuData.TotalEnergyDepKLCZTAntiBoost>0))
+    czthit = true;
+
+  if ((histo->ntuData.EnergyDepLMBoost>0) || (histo->ntuData.EnergyDepKLDBoost>0) || (histo->ntuData.EnergyDepKLTBoost>0) || (histo->ntuData.TotalEnergyDepKLHPGeBoost>0))
+    hpgehit = true;
+
+  switch(ACTIVE_DET_ID) {
+    case 1:
+      if(sddhit)
+        histo->fillTuple("0");
+        break;
+    case 2:
+      if (czthit)
+        histo->fillTuple("0");
+      break;
+    case 3:
+      if (hpgehit)
+        histo->fillTuple("0");
+      break;
+    case 4:
+      if (sddhit || czthit || hpgehit)
+        histo->fillTuple("0");
+      break;
+    case 5:
+      if (sddhit || czthit)
+        histo->fillTuple("0");
+      break;
+    case 6:
+      if (sddhit || hpgehit)
+        histo->fillTuple("0");
+      break;
+    case 7:
+      if (czthit || hpgehit)
+        histo->fillTuple("0");
+      break;
+  }
 
   G4double cut1 = 10000.;
   G4double cut2 = 0.8;
   G4double cut3 = 1.05;
   G4double cut4 = 3000000;
-  if ( SiddhartaSetup == 1 ) {
+  if (SiddhartaSetup == 1) {
     cut1 = 10000;
     cut2 = 0.75;
     cut3 = 1.20;
     cut4 = 3000000;
-  } else if ( SiddhartaSetup == 2 ) {
+  } else if (SiddhartaSetup == 2) {
     cut1 = 45.; // Kaon detector on the top of the shielding
     cut2 = 1.6;
     cut3 = 2.10;
     cut4 = 3000000;
-  } else if ( SiddhartaSetup == 3 ) {
+  } else if (SiddhartaSetup == 3) {
     cut1 = 45.;
     cut2 = 1.3;
     cut3 = 1.90;
     cut4 = 3000000;
-  } else if ( SiddhartaSetup == 6 ) {
+  } else if (SiddhartaSetup == 6) {
     cut1 = 45.;
     cut2 = 1.6;
     cut3 = 2.25;
@@ -304,14 +328,13 @@ switch(ACTIVE_DET_ID)
     cut4 = 3000000;
   }
 
-  if (sqrt(histo->ntuData.XYZKMTop[0]*histo->ntuData.XYZKMTop[0]
-                                +histo->ntuData.XYZKMTop[2]*histo->ntuData.XYZKMTop[2])<cut1) {
-    histo->fillHisto("9",histo->ntuData.TimeKMTop,1.);
-    histo->fillHisto("10",histo->ntuData.EnergyDepKMTop,1.);
-    if ( histo->ntuData.EnergyDepKMTop > cut4 ) {
-      histo->fillHisto("11",histo->ntuData.TimeKMTop,1.);
-      if ( histo->ntuData.TimeKMTop > cut2 && histo->ntuData.TimeKMTop < cut3 ) {
-        histo->fillHisto("12",histo->ntuData.XYZKMTop[2],1.);
+  if (sqrt(histo->ntuData.XYZKMTop[0]*histo->ntuData.XYZKMTop[0] + histo->ntuData.XYZKMTop[2]*histo->ntuData.XYZKMTop[2]) < cut1) {
+    histo->fillHisto("9", histo->ntuData.TimeKMTop, 1.);
+    histo->fillHisto("10", histo->ntuData.EnergyDepKMTop, 1.);
+    if (histo->ntuData.EnergyDepKMTop > cut4) {
+      histo->fillHisto("11", histo->ntuData.TimeKMTop, 1.);
+      if (histo->ntuData.TimeKMTop > cut2 && histo->ntuData.TimeKMTop < cut3) {
+        histo->fillHisto("12", histo->ntuData.XYZKMTop[2], 1.);
         if (SiddhartaSetup == 6) {
           bool triggerAnti = 0;
           G4double cutT1 = 5.;
@@ -320,17 +343,18 @@ switch(ACTIVE_DET_ID)
 
 //Create some function that will simplify these code -> Cuts should be defined or loaded before or elsewhere
 // Function to check the value in range
-          if ( histo->ntuData.TimeAnti[0] > cutT1 && histo->ntuData.TimeAnti[0] < cutT2 && histo->ntuData.EnergyAnti[0] > cutT3 ) triggerAnti = 1;
-          if ( histo->ntuData.TimeAnti[1] > cutT1 && histo->ntuData.TimeAnti[1] < cutT2 && histo->ntuData.EnergyAnti[1] > cutT3 ) triggerAnti = 1;
-          if ( histo->ntuData.TimeAnti[2] > cutT1 && histo->ntuData.TimeAnti[2] < cutT2 && histo->ntuData.EnergyAnti[2] > cutT3 ) triggerAnti = 1;
-          if ( histo->ntuData.TimeAnti[3] > cutT1 && histo->ntuData.TimeAnti[3] < cutT2 && histo->ntuData.EnergyAnti[3] > cutT3 ) triggerAnti = 1;
-          if ( histo->ntuData.TimeAnti[4] > cutT1 && histo->ntuData.TimeAnti[4] < cutT2 && histo->ntuData.EnergyAnti[4] > cutT3 ) triggerAnti = 1;
-          if ( histo->ntuData.TimeAnti[5] > cutT1 && histo->ntuData.TimeAnti[5] < cutT2 && histo->ntuData.EnergyAnti[5] > cutT3 ) triggerAnti = 1;
-          if ( histo->ntuData.TimeAnti[6] > cutT1 && histo->ntuData.TimeAnti[6] < cutT2 && histo->ntuData.EnergyAnti[6] > cutT3 ) triggerAnti = 1;
-          if ( histo->ntuData.TimeAnti[7] > cutT1 && histo->ntuData.TimeAnti[7] < cutT2 && histo->ntuData.EnergyAnti[7] > cutT3 ) triggerAnti = 1;
+          if ((histo->ntuData.TimeAnti[0] > cutT1 && histo->ntuData.TimeAnti[0] < cutT2 && histo->ntuData.EnergyAnti[0] > cutT3) ||
+              (histo->ntuData.TimeAnti[1] > cutT1 && histo->ntuData.TimeAnti[1] < cutT2 && histo->ntuData.EnergyAnti[1] > cutT3) ||
+              (histo->ntuData.TimeAnti[2] > cutT1 && histo->ntuData.TimeAnti[2] < cutT2 && histo->ntuData.EnergyAnti[2] > cutT3) ||
+              (histo->ntuData.TimeAnti[3] > cutT1 && histo->ntuData.TimeAnti[3] < cutT2 && histo->ntuData.EnergyAnti[3] > cutT3) ||
+              (histo->ntuData.TimeAnti[4] > cutT1 && histo->ntuData.TimeAnti[4] < cutT2 && histo->ntuData.EnergyAnti[4] > cutT3) ||
+              (histo->ntuData.TimeAnti[5] > cutT1 && histo->ntuData.TimeAnti[5] < cutT2 && histo->ntuData.EnergyAnti[5] > cutT3) ||
+              (histo->ntuData.TimeAnti[6] > cutT1 && histo->ntuData.TimeAnti[6] < cutT2 && histo->ntuData.EnergyAnti[6] > cutT3) ||
+              (histo->ntuData.TimeAnti[7] > cutT1 && histo->ntuData.TimeAnti[7] < cutT2 && histo->ntuData.EnergyAnti[7] > cutT3))
+            triggerAnti = 1;
 
-          if ( triggerAnti ) {
-            histo->fillHisto("13",histo->ntuData.TimeKMTop,1.);
+          if (triggerAnti) {
+            histo->fillHisto("13", histo->ntuData.TimeKMTop, 1.);
           }
         }
       }

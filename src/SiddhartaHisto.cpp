@@ -225,6 +225,7 @@ void SiddhartaHisto::book()
 	      ROOTntup[i]->Branch("KLT1AntiBoostKaonstop",ntuData.KLT1AntiBoostKaonstop,"KLT1AntiBoostKaonstop[3]/D");
 	      ROOTntup[i]->Branch("pdgcodeKLT1AntiBoost",&ntuData.pdgcodeKLT1AntiBoost,"pdgcodeKLT1AntiBoost/I");
 	      ROOTntup[i]->Branch("kaonKinEKLT1AntiBoost",&ntuData.kaonKinEKLT1AntiBoost,"kaonKinEKLT1AntiBoost/D");
+          ROOTntup[i]->Branch("gammaKinEKLT1AntiBoost",&ntuData.gammaKinEKLT1AntiBoost,"gammaKinEKLT1AntiBoost/D");
 	      ROOTntup[i]->Branch("lastkaonKinEKLT1AntiBoost",&ntuData.lastkaonKinEKLT1AntiBoost,"lastkaonKinEKLT1AntiBoost/D");
 
 	      ROOTntup[i]->Branch("TimeKLT2AntiBoost",&ntuData.TimeKLT2AntiBoost,"TimeKLT2AntiBoost/D");
@@ -234,6 +235,7 @@ void SiddhartaHisto::book()
 	      ROOTntup[i]->Branch("KLT2AntiBoostKaonstop",ntuData.KLT2AntiBoostKaonstop,"KLT2AntiBoostKaonstop[3]/D");
 	      ROOTntup[i]->Branch("pdgcodeKLT2AntiBoost",&ntuData.pdgcodeKLT2AntiBoost,"pdgcodeKLT2AntiBoost/I");
 	      ROOTntup[i]->Branch("kaonKinEKLT2AntiBoost",&ntuData.kaonKinEKLT2AntiBoost,"kaonKinEKLT2AntiBoost/D");
+          ROOTntup[i]->Branch("gammaKinEKLT2AntiBoost",&ntuData.gammaKinEKLT2AntiBoost,"gammaKinEKLT2AntiBoost/D");
 	      ROOTntup[i]->Branch("lastkaonKinEKLT2AntiBoost",&ntuData.lastkaonKinEKLT2AntiBoost,"lastkaonKinEKLT2AntiBoost/D");
 
 	      ROOTntup[i]->Branch("TimeKLBWAntiBoost",&ntuData.TimeKLBWAntiBoost,"TimeKLBWAntiBoost/D");
@@ -268,6 +270,7 @@ void SiddhartaHisto::book()
 	      ROOTntup[i]->Branch("KLTBoostKaonstop",ntuData.KLTBoostKaonstop,"KLTBoostKaonstop[3]/D");
 	      ROOTntup[i]->Branch("pdgcodeKLTBoost",&ntuData.pdgcodeKLTBoost,"pdgcodeKLTBoost/I");
 	      ROOTntup[i]->Branch("kaonKinEKLTBoost",&ntuData.kaonKinEKLTBoost,"kaonKinEKLTBoost/D");
+          ROOTntup[i]->Branch("gammaKinEKLTBoost",&ntuData.gammaKinEKLTBoost,"gammaKinEKLTBoost/D");
 	      ROOTntup[i]->Branch("lastkaonKinEKLTBoost",&ntuData.lastkaonKinEKLTBoost,"lastkaonKinEKLTBoost/D");
 
 	      ROOTntup[i]->Branch("TotalEnergyDepKLHPGeBoost",&ntuData.TotalEnergyDepKLHPGeBoost,"TotalEnergyDepKLHPGeBoost/D");

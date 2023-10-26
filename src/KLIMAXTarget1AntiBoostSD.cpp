@@ -48,6 +48,7 @@ void KLIMAXTarget1AntiBoostSD::Initialize(G4HCofThisEvent* HCE)
     analysis->histo->ntuData.KLT1AntiBoostKaonstop[1] = -1000000 / mm;
     analysis->histo->ntuData.KLT1AntiBoostKaonstop[2] = -1000000 / mm;
     analysis->histo->ntuData.kaonKinEKLT1AntiBoost = -1000000 / eV;
+    analysis->histo->ntuData.gammaKinEKLT1AntiBoost = -1000000 / eV;
     analysis->histo->ntuData.lastkaonKinEKLT1AntiBoost = -1000000 / eV;
     analysis->histo->ntuData.pdgcodeKLT1AntiBoost = -1000000;
   }
@@ -108,8 +109,7 @@ G4bool KLIMAXTarget1AntiBoostSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     analysis->histo->ntuData.KLT1AntiBooststop[1] = Y / mm;
     analysis->histo->ntuData.KLT1AntiBooststop[2] = Z / mm;
 
-    if(analysis->histo->ntuData.pdgcodeKLT1AntiBoost == -321) //K-//
-    {
+    if(analysis->histo->ntuData.pdgcodeKLT1AntiBoost == -321) { //K-//
       G4cout << "K- in Target 1 " << (aStep->GetTrack()->GetKineticEnergy()) / eV << G4endl;
       kaonCounter ++;
 
@@ -121,6 +121,9 @@ G4bool KLIMAXTarget1AntiBoostSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
       analysis->histo->ntuData.KLT1AntiBoostKaonstop[1] = Y / mm ;
       analysis->histo->ntuData.KLT1AntiBoostKaonstop[2] = Z / mm ;
     }
+    
+    if (analysis->histo->ntuData.pdgcodeKLT1AntiBoost == 22)
+      analysis->histo->ntuData.gammaKinEKLT1AntiBoost = (aStep->GetTrack()->GetKineticEnergy()) / eV; // get the Energy of the last photon hit
   }
 
   return true;

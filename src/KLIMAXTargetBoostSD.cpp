@@ -48,6 +48,7 @@ void KLIMAXTargetBoostSD::Initialize(G4HCofThisEvent* HCE)
     analysis->histo->ntuData.KLTBoostKaonstop[1] = -1000000 / mm;
     analysis->histo->ntuData.KLTBoostKaonstop[2] = -1000000 / mm;
     analysis->histo->ntuData.kaonKinEKLTBoost = -1000000 / eV;
+    analysis->histo->ntuData.gammaKinEKLTBoost = -1000000 / eV;
     analysis->histo->ntuData.lastkaonKinEKLTBoost = -1000000 / eV;
     analysis->histo->ntuData.pdgcodeKLTBoost = -1000000;
   }
@@ -108,8 +109,7 @@ G4bool KLIMAXTargetBoostSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     analysis->histo->ntuData.KLTBooststop[1] = Y / mm;
     analysis->histo->ntuData.KLTBooststop[2] = Z / mm;
 
-    if(analysis->histo->ntuData.pdgcodeKLTBoost == -321) //K-//
-    {
+    if(analysis->histo->ntuData.pdgcodeKLTBoost == -321) { //K-//
       G4cout << "K- in Target 1 " << (aStep->GetTrack()->GetKineticEnergy()) / eV << G4endl;
       kaonCounter ++;
 
@@ -121,6 +121,9 @@ G4bool KLIMAXTargetBoostSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
       analysis->histo->ntuData.KLTBoostKaonstop[1] = Y / mm ;
       analysis->histo->ntuData.KLTBoostKaonstop[2] = Z / mm ;
     }
+    
+    if (analysis->histo->ntuData.pdgcodeKLTBoost == 22)
+      analysis->histo->ntuData.gammaKinEKLTBoost = (aStep->GetTrack()->GetKineticEnergy()) / eV; // get the Energy of the last gamma hit
   }
 
   return true;

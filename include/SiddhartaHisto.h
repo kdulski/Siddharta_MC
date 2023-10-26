@@ -97,6 +97,7 @@ struct siddharta_t {
   double TimeKLT1AntiBoost;
   double EnergyDepKLT1AntiBoost;
   double kaonKinEKLT1AntiBoost;
+  double gammaKinEKLT1AntiBoost;
   double lastkaonKinEKLT1AntiBoost;
   double XYZKLT1AntiBoost[3];
   double KLT1AntiBooststop[3];
@@ -106,6 +107,7 @@ struct siddharta_t {
   double TimeKLT2AntiBoost;
   double EnergyDepKLT2AntiBoost;
   double kaonKinEKLT2AntiBoost;
+  double gammaKinEKLT2AntiBoost;
   double lastkaonKinEKLT2AntiBoost;
   double XYZKLT2AntiBoost[3];
   double KLT2AntiBooststop[3];
@@ -139,6 +141,7 @@ struct siddharta_t {
   double TimeKLTBoost;
   double EnergyDepKLTBoost;
   double kaonKinEKLTBoost;
+  double gammaKinEKLTBoost;
   double lastkaonKinEKLTBoost;
   double XYZKLTBoost[3];
   double KLTBooststop[3];

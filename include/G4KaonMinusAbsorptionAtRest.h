@@ -71,6 +71,8 @@ public:
   void BuildPhysicsTable(const G4ParticleDefinition&);
   G4VParticleChange* AtRestDoIt(const G4Track& aTrack, const G4Step& aStep);
 
+  void GenerateKaonNucleusAbsLines();
+  
 private:
   G4KaonMinusAbsorptionAtRest& operator=(const G4KaonMinusAbsorptionAtRest &right);
   G4KaonMinusAbsorptionAtRest(const G4KaonMinusAbsorptionAtRest& );
@@ -117,10 +119,74 @@ private:
   G4double yieldKa,probKa,yieldKb,probKb,yieldKg,probKg,yieldKd,probKd,yieldKe,probKe,yieldKz,probKz,yieldKi,probKi;
   G4double yieldXaOther,probXaOther;
 
+  std::map<G4int, unsigned> atomicNumberVSnucleusRef;
+  std::vector<KaonNucleusAbsLines> nucleiImplemented;
+  
   bool fPlotProducedXrayLies = true;
 };
 
+//------------------Implementing structure for nuclei absorption lines
+enum AbsLineSimType {absSimulateAll, absSimulateByIntensity};
 
+class KaonNucleusAbsLines
+{
+public:
+  KaonNucleusAbsLines() {nmbOfIsotopes = 0; atomicNumber = 0; cleanMaterialsOnly = false;};
+  ~KaonNucleusAbsLines() {nmbOfIsotopes = 0; atomicNumber = 0; nucleusNumber.clear(); photonEnergy.clear(); intensityOfGivenEnergy.clear();};
+
+  void AddNucleusNumber(G4int newA) {nucleusNumber.push_back(newA);};
+  void AddPhotonEnergy(G4double energy, G4double intensity) {
+    photonEnergy.push_back(energy);
+    intensityOfGivenEnergy.push_back(intensity);
+  };
+  
+  void SetAtomicNumber(G4int newZ) {atomicNumber = newZ;};
+  void SetSimType(AbsLineSimType type) {typeOfSimulation = type;};
+  void SetCleanMaterialOnly() {cleanMaterialsOnly = true;};
+  
+  bool CheckNucleusNumber(G4int givenZ);
+  
+  unsigned GetNumberOfIsotopes() {return nmbOfIsotopes;};
+  G4int GetAtomicNumber() {return atomicNumber;};
+  std::vector<G4double> GetPhotonEnergies(G4int noOfElements);
+
+private:
+  unsigned nmbOfIsotopes;
+  G4int atomicNumber; //number of protons
+  std::vector<G4int> nucleusNumber;
+  std::vector<G4double> photonEnergy;
+  std::vector<G4double> intensityOfGivenEnergy;
+  AbsLineSimType typeOfSimulation;
+  bool cleanMaterialsOnly;
+}
+
+bool KaonNucleusAbsLines::CheckNucleusNumber(G4int givenZ)
+{
+  for (unsigned i=0; i<nucleusNumber.size(); i++) {
+    if (givenZ == nucleusNumber.at(i))
+      return true;
+  }
+  return false;
+}
+
+std::vector<G4double> KaonNucleusAbsLines::GetPhotonEnergies(G4int noOfElements)
+{
+  std::vector<G4double> photonEnergyToReturn;
+  
+  if (cleanMaterialsOnly && noOfElements > 1)
+    return photonEnergyToReturn;
+  
+  if (typeOfSimulation == AbsLineSimType::absSimulateAll) {
+    photonEnergyToReturn = photonEnergy;
+  } else {
+    for unsigned i=0; i<intensityOfGivenEnergy.size() && i<photonEnergyToReturn.size(); i++) {
+      if (intensityOfGivenEnergy.at(i) > G4UniformRand())
+        photonEnergyToReturn.push_back(photonEnergy.at(i));
+    }
+  }
+  return photonEnergyToReturn;
+}
+//--------------------------------------------------------------------
 
 //To remove after implementing G4PhaseSpaceDecayChannel
 //--

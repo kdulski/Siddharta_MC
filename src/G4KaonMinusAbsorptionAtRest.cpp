@@ -83,6 +83,8 @@ G4KaonMinusAbsorptionAtRest::G4KaonMinusAbsorptionAtRest(const G4String& process
 
   yieldXaOther=1.;probXaOther=.75;
   G4HadronicProcessStore::Instance()->RegisterExtraProcess(this);
+  
+  GenerateKaonNucleusAbsLines();
 }
 
 
@@ -424,74 +426,24 @@ G4DynamicParticleVector* G4KaonMinusAbsorptionAtRest::KaonNucleonReaction()
 
 //====kaonic atom cascade photons=================================================
 
-
-  // ******************  OLD *****************************//
-
-/*  
   producedBosonDef = G4Gamma::Gamma();
   G4double photonEnergy;
-  unsigned nphotons = 0;
-
   std::vector<G4double> photonEnergy1;
-  if (((iniA) == 27) && ((iniZ) == 13)) {               //Aluminium
-    photonEnergy1.push_back(10435.1*eV);
-    photonEnergy1.push_back(17840.0*eV);
-    photonEnergy1.push_back(5113.4*eV);
-    photonEnergy1.push_back(9025.0*eV);
-
-// added 16.06.2021 H. Shi KAl 7-6 from KG eq. calc.
-    photonEnergy1.push_back(16058.0*eV);
-    photonEnergy1.push_back(26518.4*eV); // added Jan 2023
-    photonEnergy1.push_back(7150.9*eV);
-    photonEnergy1.push_back(12262.8*eV);
-  } else if (((iniA) == 48) && ((iniZ) == 22)) {        //Titanium
-    photonEnergy1.push_back(8312.0*eV);
-    photonEnergy1.push_back(14770.0*eV);
-    photonEnergy1.push_back(6467.0*eV);
-    photonEnergy1.push_back(11590.0*eV);
-  } else if (((iniA) == 12) && ((iniZ) == 6)) {         //Carbon
-    photonEnergy1.push_back(10216.5*eV);
-    photonEnergy1.push_back(15809.0*eV);
-    photonEnergy1.push_back(5544.9*eV);
-    photonEnergy1.push_back(8885.8*eV);
-  } else if (((iniA) == 16) && ((iniZ) == 8)) {         //Oxygen
-    photonEnergy1.push_back(9968.7*eV);
-    photonEnergy1.push_back(16062.0*eV);
-    photonEnergy1.push_back(6006.8*eV);
-    photonEnergy1.push_back(9958.0*eV);
-  } else if (((iniA) == 14) && ((iniZ) == 7)) {         //Nitrogen
-    photonEnergy1.push_back(13995.4*eV);
-    photonEnergy1.push_back(21588.2*eV);
-    photonEnergy1.push_back(7595.4*eV);
-    photonEnergy1.push_back(12223*eV);
-    photonEnergy1.push_back(4577.1*eV);
-    photonEnergy1.push_back(7578*eV);
-  } else if (((iniA) == 19) && ((iniZ) == 9)) {         //Fluorine
-    photonEnergy1.push_back(7642.7*eV);
-    photonEnergy1.push_back(12599*eV);
-  } else if (((iniA) == 28) && ((iniZ) == 14)) {        //Silicon
-    photonEnergy1.push_back(8300.1*eV);
-    photonEnergy1.push_back(14233.1*eV);
-    photonEnergy1.push_back(5935.0*eV);
-    photonEnergy1.push_back(10324.0*eV);
-    photonEnergy1.push_back(4390.1*eV);
-    photonEnergy1.push_back(7728.0*eV);
+    
+  std::vector<G4double> photonEnergies;
+  if (iniA == 2 && iniZ == 1) {
+    photonEnergies = nucleiImplemented.at(atomicNumberVSnucleusRef.at(-iniZ)).GetPhotonEnergies(currentMaterial->GetNumberOfElements());
+  } else {
+    photonEnergies = nucleiImplemented.at(atomicNumberVSnucleusRef.at(iniZ)).GetPhotonEnergies(currentMaterial->GetNumberOfElements());
   }
-  nphotons = photonEnergy1.size()/2 ;
-
-  for (unsigned i=0; i<nphotons; i++) {
-    if (probXaOther > G4UniformRand()) {
-      photonEnergy = photonEnergy1[2*i];
-    } else {
-      photonEnergy = photonEnergy1[2*i+1];
-    }
+    
+  for (unsigned i=0; i<photonEnergies.size(); i++) {
     G4DynamicParticle* producedBoson = new G4DynamicParticle(producedBosonDef, dummy);
 
-//Creation of spearate function to draw in sphere
     G4double costheta = 2.0*G4UniformRand() - 1.0;
     G4double sintheta = std::sqrt(1.0 - costheta*costheta);
     G4double phi = 2.0*pi*G4UniformRand();
-    G4double photonMomentum = photonEnergy;
+    G4double photonMomentum = photonEnergies.at(i);
 
     G4double pz=costheta*photonMomentum;
     G4double px=sintheta*std::cos(phi)*photonMomentum;
@@ -501,397 +453,7 @@ G4DynamicParticleVector* G4KaonMinusAbsorptionAtRest::KaonNucleonReaction()
     producedBoson->SetMomentum(photMomentum);
     products->push_back(producedBoson);
   }
-*/
-	// *********************** NEW ******************//
-	//
 
-	producedBosonDef = G4Gamma::Gamma();
-	G4double photonEnergy;
-	G4bool CZT_Al_Target = false;
-	G4bool CZT_C_Target = false;
-	G4bool HPGe_Pb_Target = false;
-	unsigned nphotons = 0;
-
-	std::vector<G4double> photonEnergy1;
-	if (((iniA) == 27) && ((iniZ) == 13)) {               //Aluminium
-		/*  photonEnergy1.push_back(10435.1*eV);
-		    photonEnergy1.push_back(17840.0*eV);
-		    photonEnergy1.push_back(5113.4*eV);
-		    photonEnergy1.push_back(9025.0*eV);
-
-		// added 16.06.2021 H. Shi KAl 7-6 from KG eq. calc.
-		photonEnergy1.push_back(16058.0*eV);
-		photonEnergy1.push_back(26518.4*eV); // added Jan 2023
-		photonEnergy1.push_back(7150.9*eV);
-		photonEnergy1.push_back(12262.8*eV);
-		 */  } else if (((iniA) == 48) && ((iniZ) == 22)) {        //Titanium
-			 photonEnergy1.push_back(8312.0*eV);
-			 photonEnergy1.push_back(14770.0*eV);
-			 photonEnergy1.push_back(6467.0*eV);
-			 photonEnergy1.push_back(11590.0*eV);
-		 }/*	else if (((iniA) == 12) && ((iniZ) == 6)) {         //Carbon
-			 photonEnergy1.push_back(10216.5*eV);
-			 photonEnergy1.push_back(15809.0*eV);
-			 photonEnergy1.push_back(5544.9*eV);
-			 photonEnergy1.push_back(8885.8*eV);
-		 }*/		 else if (((iniA) == 16) && ((iniZ) == 8)) {         //Oxygen
-			 photonEnergy1.push_back(9968.7*eV);
-			 photonEnergy1.push_back(16062.0*eV);
-			 photonEnergy1.push_back(6006.8*eV);
-			 photonEnergy1.push_back(9958.0*eV);
-		 } else if (((iniA) == 14) && ((iniZ) == 7)) {         //Nitrogen
-			 photonEnergy1.push_back(13995.4*eV);
-			 photonEnergy1.push_back(21588.2*eV);
-			 photonEnergy1.push_back(7595.4*eV);
-			 photonEnergy1.push_back(12223*eV);
-			 photonEnergy1.push_back(4577.1*eV);
-			 photonEnergy1.push_back(7578*eV);
-		 } else if (((iniA) == 19) && ((iniZ) == 9)) {         //Fluorine
-			 photonEnergy1.push_back(7642.7*eV);
-			 photonEnergy1.push_back(12599*eV);
-		 } else if (((iniA) == 28) && ((iniZ) == 14)) {        //Silicon
-			 photonEnergy1.push_back(8300.1*eV);
-			 photonEnergy1.push_back(14233.1*eV);
-			 photonEnergy1.push_back(5935.0*eV);
-			 photonEnergy1.push_back(10324.0*eV);
-			 photonEnergy1.push_back(4390.1*eV);
-			 photonEnergy1.push_back(7728.0*eV);
-		 }
-	nphotons = photonEnergy1.size()/2 ;
-
-	for (unsigned i=0; i<nphotons; i++) {
-		if (probXaOther > G4UniformRand()) {
-			photonEnergy = photonEnergy1[2*i];
-		} else {
-			photonEnergy = photonEnergy1[2*i+1];
-		}
-		G4DynamicParticle* producedBoson = new G4DynamicParticle(producedBosonDef, dummy);
-
-		//Creation of spearate function to draw in sphere
-		G4double costheta = 2.0*G4UniformRand() - 1.0;
-		G4double sintheta = std::sqrt(1.0 - costheta*costheta);
-		G4double phi = 2.0*pi*G4UniformRand();
-		G4double photonMomentum = photonEnergy;
-
-		G4double pz=costheta*photonMomentum;
-		G4double px=sintheta*std::cos(phi)*photonMomentum;
-		G4double py=sintheta*std::sin(phi)*photonMomentum;
-
-		G4ThreeVector photMomentum(px,py,pz);
-		producedBoson->SetMomentum(photMomentum);
-		products->push_back(producedBoson);
-	}
-	if (((iniA) == 27) && ((iniZ) == 13))               //Aluminium for CZT
-	{
-		//G4cout << " IN TARGET ALUMINUM " << G4endl;
-		CZT_Al_Target = true;
-		photonEnergy1.push_back(302293.0*eV); // 3-->2
-		photonEnergy1.push_back(105803.0*eV); // 4-->3
-		photonEnergy1.push_back(48972.0*eV); // 5-->4
-		photonEnergy1.push_back(75573.0*eV); // 6-->4
-		photonEnergy1.push_back(154774.0*eV); // 5-->3
-		photonEnergy1.push_back(26602.0*eV); // 6-->5
-		photonEnergy1.push_back(42642.0*eV); // 7-->5
-	}
-	if(CZT_Al_Target)
-	{
-		nphotons = photonEnergy1.size();
-
-		for (unsigned i=0; i<nphotons; i++) 
-		{
-			photonEnergy = photonEnergy1[i];
-			G4cout << nphotons << " generated in Al: " << i << " " << photonEnergy / eV << G4endl;
-
-			G4DynamicParticle* producedBoson = new G4DynamicParticle(producedBosonDef, dummy);
-
-			//Creation of spearate function to draw in sphere
-			G4double costheta = 2.0*G4UniformRand() - 1.0;
-			G4double sintheta = std::sqrt(1.0 - costheta*costheta);
-			G4double phi = 2.0*pi*G4UniformRand();
-			G4double photonMomentum = photonEnergy;
-
-			G4double pz=costheta*photonMomentum;
-			G4double px=sintheta*std::cos(phi)*photonMomentum;
-			G4double py=sintheta*std::sin(phi)*photonMomentum;
-
-			G4ThreeVector photMomentum(px,py,pz);
-			//	G4cout << px/eV << " " << py/eV << " " << pz/eV << G4endl;
-			producedBoson->SetMomentum(photMomentum);
-			products->push_back(producedBoson);
-		}
-		CZT_Al_Target = false;
-	}
-
-	if (((iniA) == 12) && ((iniZ) == 6))               //Carbon for CZT
-	{
-		//G4cout << " IN TARGET Carbon " << G4endl;
-		CZT_C_Target = true;
-		photonEnergy1.push_back(62881.1*eV); // 3-->2
-		photonEnergy1.push_back(22008.4*eV); // 4-->3
-		photonEnergy1.push_back(32195.1*eV); // 5-->3
-		photonEnergy1.push_back(10216.5*eV); // 5-->4
-		photonEnergy1.push_back(15809.0*eV); // 6-->4
-		photonEnergy1.push_back(5544.9*eV); // 6-->5
-		photonEnergy1.push_back(8885.8*eV); // 7-->5
-	}
-	if(CZT_C_Target)
-	{
-		nphotons = photonEnergy1.size();
-
-		for (unsigned i=0; i<nphotons; i++) 
-		{
-			photonEnergy = photonEnergy1[i];
-			G4cout << nphotons << " generated in C: " << i << " " << photonEnergy / eV << G4endl;
-
-			G4DynamicParticle* producedBoson = new G4DynamicParticle(producedBosonDef, dummy);
-
-			//Creation of spearate function to draw in sphere
-			G4double costheta = 2.0*G4UniformRand() - 1.0;
-			G4double sintheta = std::sqrt(1.0 - costheta*costheta);
-			G4double phi = 2.0*pi*G4UniformRand();
-			G4double photonMomentum = photonEnergy;
-
-			G4double pz=costheta*photonMomentum;
-			G4double px=sintheta*std::cos(phi)*photonMomentum;
-			G4double py=sintheta*std::sin(phi)*photonMomentum;
-
-			G4ThreeVector photMomentum(px,py,pz);
-			//	G4cout << px/eV << " " << py/eV << " " << pz/eV << G4endl;
-			producedBoson->SetMomentum(photMomentum);
-			products->push_back(producedBoson);
-		}
-		CZT_C_Target = false;
-	}
-
-
-
-	if ((((iniA) == 206)||((iniA) == 207)||((iniA) == 208)) && ((iniZ) == 82))               //Lead for CZT
-	{
-		//G4cout << " IN TARGET ALUMINUM " << G4endl;
-		HPGe_Pb_Target = true;
-		photonEnergy1.push_back(288822.0*eV); // 9-->8
-		photonEnergy1.push_back(206593.0*eV); // 10-->9
-		photonEnergy1.push_back(152855.0*eV); // 11-->10
-		photonEnergy1.push_back(269114.0*eV); // 12-->10
-		photonEnergy1.push_back(359448.0*eV); // 11-->9
-		photonEnergy1.push_back(116259.0*eV); // 12-->11
-		photonEnergy1.push_back(206736.0*eV); // 13-->11
-	}
-	if(HPGe_Pb_Target)
-	{
-		nphotons = photonEnergy1.size();
-
-		for (unsigned i=0; i<nphotons; i++) 
-		{
-			photonEnergy = photonEnergy1[i];
-			//	G4cout << nphotons << " " << i << " " << photonEnergy / eV << G4endl;
-
-			G4DynamicParticle* producedBoson = new G4DynamicParticle(producedBosonDef, dummy);
-
-			//Creation of spearate function to draw in sphere
-			G4double costheta = 2.0*G4UniformRand() - 1.0;
-			G4double sintheta = std::sqrt(1.0 - costheta*costheta);
-			G4double phi = 2.0*pi*G4UniformRand();
-			G4double photonMomentum = photonEnergy;
-
-			G4double pz=costheta*photonMomentum;
-			G4double px=sintheta*std::cos(phi)*photonMomentum;
-			G4double py=sintheta*std::sin(phi)*photonMomentum;
-
-			G4ThreeVector photMomentum(px,py,pz);
-			//	G4cout << px/eV << " " << py/eV << " " << pz/eV << G4endl;
-			producedBoson->SetMomentum(photMomentum);
-			products->push_back(producedBoson);
-		}
-		HPGe_Pb_Target = false;
-	}
-
-//"Special guests": H & D
-//generates kH Xray photons only in gas, lot oh H in kapton, Stark killed
-
-  if ((currentMaterial->GetNumberOfElements() == 1) && ((iniA) == 1) && (iniZ) == 1) {
-/*
-Repeated code -> Create a function and call it!!!
- */
-    prob = 0;
-    ranflat = G4UniformRand();
-    G4double yieldKTot = (yieldKa + yieldKb + yieldKg + yieldKd + yieldKe + yieldKz + yieldKi)/7;
-
-    std::vector<double> photonsEnergyToSim;
-    photonsEnergyToSim.push_back(6191.8*eV);
-    photonsEnergyToSim.push_back(7388.6*eV);
-
-   /* if ((prob += yieldKa*probKa) > ranflat*yieldKTot) {
-      photonEnergy = 6191.8*eV;
-    } else if ((prob += yieldKb*probKb) > ranflat*yieldKTot) {
-      photonEnergy = 7388.6*eV;
-    } else if ((prob += yieldKg*probKg) > ranflat*yieldKTot) {
-      photonEnergy = 7807.4*eV;
-    } else if ((prob += yieldKd*probKd) > ranflat*yieldKTot) {
-      photonEnergy = 8001.3*eV;
-    } else if ((prob += yieldKe*probKe) > ranflat*yieldKTot) {
-      photonEnergy = 8106.6*eV;
-    } else if ((prob += yieldKz*probKz) > ranflat*yieldKTot) {
-      photonEnergy = 8170.0*eV;
-    } else if ((prob += yieldKi*probKi) > ranflat*yieldKTot) {
-      photonEnergy = 8211.2*eV;
-    } else {
-      G4cout << "======bad probability sum for kH transitions====" << G4endl;
-      photonEnergy = 5*eV;
-    }*/
-    for (unsigned j=0; j<photonsEnergyToSim.size(); j++) {
-      photonEnergy = photonsEnergyToSim.at(j);
-
-      if (photonEnergy > 5*eV) {
-//uncomment the following line for realistic production (comment the next one)
-//G4double photonEnergyH = G4RandBreitWigner::shoot(photonEnergy, 570)*eV;
-        G4double photonEnergyH = photonEnergy;
-        G4double photonMomentumH = photonEnergyH;
-
-        G4double costhetaH = 2.0*G4UniformRand() - 1.0;
-        G4double sinthetaH = std::sqrt(1.0 - costhetaH*costhetaH);
-        G4double phiH = 2.0*pi*G4UniformRand();
-
-        G4double pzH = costhetaH*photonMomentumH;
-        G4double pxH = sinthetaH*std::cos(phiH)*photonMomentumH;
-        G4double pyH = sinthetaH*std::sin(phiH)*photonMomentumH;
-
-        G4ThreeVector photMomentumH(pxH,pyH,pzH);
-        G4DynamicParticle* producedBosonH = new G4DynamicParticle(producedBosonDef, dummy);
-        producedBosonH->SetMomentum(photMomentumH);
-        products->push_back(producedBosonH);
-      }
-    }
-  }
-
-// DEUTERIUM //
-//
-  if ((currentMaterial->GetNumberOfElements() == 1) && ((iniA) == 2) && (iniZ) == 1) {
-    prob = 0;
-    ranflat = G4UniformRand();
-    G4double shift = -800.*eV;
-    G4double yieldKTot = (yieldKa + yieldKb + yieldKg + yieldKd + yieldKe + yieldKz + yieldKi)/7;
-
-    std::vector<double> photonsEnergyToSim;
-    photonsEnergyToSim.push_back(7834*eV + shift);
-    photonsEnergyToSim.push_back(9280.2*eV + shift);
-
- /*   if ((prob += yieldKa*probKa) > ranflat*yieldKTot) {
-      photonEnergy = 7834.0*eV + shift;
-    } else if ((prob += yieldKb*probKb) > ranflat*yieldKTot) {
-      photonEnergy = 9280.2*eV + shift;
-    } else if ((prob += yieldKg*probKg) > ranflat*yieldKTot) {
-      photonEnergy = 9786.2*eV + shift;
-    } else if ((prob += yieldKd*probKd) > ranflat*yieldKTot) {
-      photonEnergy = 10020.4*eV + shift;
-    } else if ((prob += yieldKe*probKe) > ranflat*yieldKTot) {
-      photonEnergy = 10147.6*eV + shift;
-    } else if ((prob += yieldKz*probKz) > ranflat*yieldKTot) {
-      photonEnergy = 10224.3*eV + shift;
-    } else if ((prob += yieldKi*probKi) > ranflat*yieldKTot) {
-      photonEnergy = 10274.1*eV + shift;
-    } else {
-      G4cout << "======bad probability sum for kH transitions====" << G4endl;
-      photonEnergy = 5*eV;
-    }*/
-    for (unsigned j=0; j<photonsEnergyToSim.size(); j++) {
-      photonEnergy = photonsEnergyToSim.at(j);
-
-      if (photonEnergy > 5*eV) {
-
-//uncomment the following line for realistic production (comment the next one)
-//G4double photonEnergyH = G4RandBreitWigner::shoot(photonEnergy, 570)*eV;
-        G4double photonEnergyH = photonEnergy;
-        G4double photonMomentumH = photonEnergyH;
-
-        G4double costhetaH = 2.0*G4UniformRand() - 1.0;
-        G4double sinthetaH = std::sqrt(1.0 - costhetaH*costhetaH);
-        G4double phiH = 2.0*pi*G4UniformRand();
-
-        G4double pzH=costhetaH*photonMomentumH;
-        G4double pxH=sinthetaH*std::cos(phiH)*photonMomentumH;
-        G4double pyH=sinthetaH*std::sin(phiH)*photonMomentumH;
-
-        G4ThreeVector photMomentumH(pxH,pyH,pzH);
-        G4DynamicParticle* producedBosonH = new G4DynamicParticle(producedBosonDef,dummy);
-        producedBosonH->SetMomentum(photMomentumH);
-        products->push_back(producedBosonH);
-      }
-    }
-  }
-
-// Helium-4 // Added 12.2020 H. Shi
-//
-  if ((currentMaterial->GetNumberOfElements() == 1) && ((iniA) == 4) && (iniZ) == 2) {
-// Assume 100 % yield La line only
-// shift from PLB 681 310
-    G4double shift = 0.*eV;
-    photonEnergy = 6463.6*eV + shift;
-
-    if (photonEnergy > 5*eV) {
-//uncomment the following line for realistic production (comment the next one)
-//G4double photonEnergyH = G4RandBreitWigner::shoot(photonEnergy, 570)*eV;
-      G4double photonEnergyH = photonEnergy;
-      G4double photonMomentumH = photonEnergyH;
-
-      G4double costhetaH = 2.0*G4UniformRand() - 1.0;
-      G4double sinthetaH = std::sqrt(1.0 - costhetaH*costhetaH);
-      G4double phiH = 2.0*pi*G4UniformRand();
-
-      G4double pzH=costhetaH*photonMomentumH;
-      G4double pxH=sinthetaH*std::cos(phiH)*photonMomentumH;
-      G4double pyH=sinthetaH*std::sin(phiH)*photonMomentumH;
-
-      G4ThreeVector photMomentumH(pxH,pyH,pzH);
-      G4DynamicParticle* producedBosonH = new G4DynamicParticle(producedBosonDef, dummy);
-      producedBosonH->SetMomentum(photMomentumH);
-      products->push_back(producedBosonH);
-    }
-  }
-
-//Neonium
-  if ((currentMaterial->GetNumberOfElements() == 1) && ((iniA) == 20) && (iniZ) == 10) {
-// Assume 100 % yield La line only
-    G4double shift = 0.*eV;
-//Parameter to choose the line to simulate, instead of saving commented lines. In future, maybe it is worth to manipulate the number
-//of line by modifying CARD.dat or using messenger.
-    int whichLine = 1; // 2 -> second , 3 -> third
-    std::vector<G4double> photonEnergyLines;
-
-    photonEnergyLines.push_back(6118.91*eV + shift); //8->7
-    photonEnergyLines.push_back(9427.65*eV + shift); //7->6
-    photonEnergyLines.push_back(15635.4*eV + shift); //6->5
-
-// Simulating only one line at a time
-//photonEnergy = photonEnergyLines.at(whichLine - 1);
-
-// Simulating all three lines at once
-    for (unsigned j=0; j<photonEnergyLines.size(); j++) {
-
-      photonEnergy = photonEnergyLines.at(j);
-
-      if (photonEnergy > 5*eV) {
-//uncomment the following line for realistic production (comment the next one)
-//G4double photonEnergyH = G4RandBreitWigner::shoot(photonEnergy, 570)*eV;
-        G4double photonEnergyH = photonEnergy; 
-       	G4double photonMomentumH = photonEnergyH;
-
-	G4double costhetaH = 2.0*G4UniformRand() - 1.0;
-	G4double sinthetaH = std::sqrt(1.0 - costhetaH*costhetaH);
-	G4double phiH = 2.0*pi*G4UniformRand();
-
-	G4double pzH=costhetaH*photonMomentumH;
-	G4double pxH=sinthetaH*std::cos(phiH)*photonMomentumH;
-	G4double pyH=sinthetaH*std::sin(phiH)*photonMomentumH;
-
-	G4ThreeVector photMomentumH(pxH,pyH,pzH);
-	G4DynamicParticle* producedBosonH = new
-	G4DynamicParticle(producedBosonDef, dummy);
-	producedBosonH->SetMomentum(photMomentumH);
-	products->push_back(producedBosonH);
-      }
-    }
-  } 
 //==========================end cascade==========================================
   if (fPlotProducedXrayLies) {
     SiddhartaAnalysisManager* analysis = SiddhartaAnalysisManager::getInstance();
@@ -999,4 +561,167 @@ G4DynamicParticle* G4KaonMinusAbsorptionAtRest::SigmaLambdaConversion(G4DynamicP
   nucleus->SetParameters(A,newZ);
 // The calling routine is responsible to delete the sigma!!
   return outLambda;
+}
+
+void G4KaonMinusAbsorptionAtRest::GenerateKaonNucleusAbsLines()
+{
+  std::map<G4int, unsigned> atomicNumberVSnucleusRef;
+  std::vector<KaonNucleusAbsLines> nucleiImplemented;
+  
+//Hydrogen
+  KaonNucleusAbsLines hydrogen;
+  hydrogen.SetAtomicNumber(1);
+  hydrogen.AddNucleusNumber(1);
+  hydrogen.AddPhotonEnergy(6191.8*eV, 1.0);
+  hydrogen.AddPhotonEnergy(7388.6*eV, 1.0);
+  hydrogen.SetSimType(AbsLineSimType::absSimulateAll);
+  hydrogen.SetCleanMaterialOnly();
+  atomicNumberVSnucleusRef.insert(std::pair{1,nucleiImplemented.size()});
+  nucleiImplemented.push_back(hydrogen);
+//Deuterium -> giving minus atomic number to differentiate between H and D
+  KaonNucleusAbsLines deuterium;
+  deuterium.SetAtomicNumber(1);
+  deuterium.AddNucleusNumber(2);
+  G4double shiftForD = -800.*eV;
+  deuterium.AddPhotonEnergy(7834*eV + shiftForD, 1.0);
+  deuterium.AddPhotonEnergy(9280.2*eV + shiftForD, 1.0);
+  deuterium.SetSimType(AbsLineSimType::absSimulateAll);
+  deuterium.SetCleanMaterialOnly();
+  atomicNumberVSnucleusRef.insert(std::pair{-1,nucleiImplemented.size()});
+  nucleiImplemented.push_back(deuterium);
+//Helium
+  KaonNucleusAbsLines helium;
+  helium.SetAtomicNumber(2);
+  helium.AddNucleusNumber(4);
+  G4double shiftForHe = 0.*eV;
+  helium.AddPhotonEnergy(6463.6*eV + shiftForHe, 1.0);
+  helium.SetSimType(AbsLineSimType::absSimulateAll);
+  helium.SetCleanMaterialOnly();
+  atomicNumberVSnucleusRef.insert(std::pair{2,nucleiImplemented.size()});
+  nucleiImplemented.push_back(helium);
+//Carbon
+  KaonNucleusAbsLines carbon;
+  carbon.SetAtomicNumber(6);
+  carbon.AddNucleusNumber(12);
+  carbon.AddPhotonEnergy(62881.1*eV, 1.0); // 3-->2
+  carbon.AddPhotonEnergy(22008.4*eV, 1.0); // 4-->3
+  carbon.AddPhotonEnergy(32195.1*eV, 1.0); // 5-->3
+  carbon.AddPhotonEnergy(10216.5*eV, 1.0); // 5-->4
+  carbon.AddPhotonEnergy(15809.0*eV, 1.0); // 6-->4
+  carbon.AddPhotonEnergy(5544.9*eV, 1.0); // 6-->5
+  carbon.AddPhotonEnergy(8885.8*eV, 1.0); // 7-->5
+  carbon.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{6,nucleiImplemented.size()});
+  nucleiImplemented.push_back(carbon);
+//Nitrogen
+  KaonNucleusAbsLines nitrogen;
+  nitrogen.SetAtomicNumber(7);
+  nitrogen.AddNucleusNumber(14);
+  nitrogen.AddPhotonEnergy(13995.4*eV, 1.0);
+  nitrogen.AddPhotonEnergy(21588.2*eV, 1.0);
+  nitrogen.AddPhotonEnergy(7595.4*eV, 1.0);
+  nitrogen.AddPhotonEnergy(12223.0*eV, 1.0);
+  nitrogen.AddPhotonEnergy(4577.1*eV, 1.0);
+  nitrogen.AddPhotonEnergy(7578.0*eV, 1.0);
+  nitrogen.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{7,nucleiImplemented.size()});
+  nucleiImplemented.push_back(nitrogen);
+//Oxygen
+  KaonNucleusAbsLines oxygen;
+  oxygen.SetAtomicNumber(8);
+  oxygen.AddNucleusNumber(16);
+  oxygen.AddPhotonEnergy(9968.7*eV, 1.0);
+  oxygen.AddPhotonEnergy(16062.0*eV, 1.0);
+  oxygen.AddPhotonEnergy(6006.8*eV, 1.0);
+  oxygen.AddPhotonEnergy(9958.0*eV, 1.0);
+  oxygen.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{8,nucleiImplemented.size()});
+  nucleiImplemented.push_back(oxygen);
+//Fluorine
+  KaonNucleusAbsLines fluorine;
+  fluorine.SetAtomicNumber(9);
+  fluorine.AddNucleusNumber(19);
+  fluorine.AddPhotonEnergy(7642.7*eV, 1.0);
+  fluorine.AddPhotonEnergy(12599.0*eV, 1.0);
+  fluorine.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{9,nucleiImplemented.size()});
+  nucleiImplemented.push_back(fluorine);
+//Neon
+  KaonNucleusAbsLines neon;
+  neon.SetAtomicNumber(10);
+  neon.AddNucleusNumber(20);
+  neon.AddNucleusNumber(22);
+  neon.AddPhotonEnergy(6118.91*eV, 1.0);
+  neon.AddPhotonEnergy(9427.65*eV, 1.0);
+  neon.AddPhotonEnergy(15635.4*eV, 1.0);
+  neon.SetSimType(AbsLineSimType::absSimulateAll);
+  neon.SetCleanMaterialOnly();
+  atomicNumberVSnucleusRef.insert(std::pair{10,nucleiImplemented.size()});
+  nucleiImplemented.push_back(neon);
+//Aluminium
+  KaonNucleusAbsLines aluminium;
+  aluminium.SetAtomicNumber(13);
+  aluminium.AddNucleusNumber(27);
+  aluminium.AddPhotonEnergy(302293.0*eV, 1.0); // 3-->2
+  aluminium.AddPhotonEnergy(105803.0*eV, 1.0); // 4-->3
+  aluminium.AddPhotonEnergy(48972.0*eV, 1.0); // 5-->4
+  aluminium.AddPhotonEnergy(75573.0*eV, 1.0); // 6-->4
+  aluminium.AddPhotonEnergy(154774.0*eV, 1.0); // 5-->3
+  aluminium.AddPhotonEnergy(26602.0*eV, 1.0); // 6-->5
+  aluminium.AddPhotonEnergy(42642.0*eV, 1.0); // 7-->5
+  aluminium.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{13,nucleiImplemented.size()});
+  nucleiImplemented.push_back(aluminium);
+//Silicon
+  KaonNucleusAbsLines silicon;
+  silicon.SetAtomicNumber(14);
+  silicon.AddNucleusNumber(28);
+  silicon.AddPhotonEnergy(8300.1*eV, 1.0);
+  silicon.AddPhotonEnergy(14233.1*eV, 1.0);
+  silicon.AddPhotonEnergy(5935.0*eV, 1.0);
+  silicon.AddPhotonEnergy(10324.0*eV, 1.0);
+  silicon.AddPhotonEnergy(4390.1*eV, 1.0);
+  silicon.AddPhotonEnergy(7728.0*eV, 1.0);
+  silicon.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{14,nucleiImplemented.size()});
+  nucleiImplemented.push_back(silicon);
+//Titanium
+  KaonNucleusAbsLines titanium;
+  titanium.SetAtomicNumber(22);
+  titanium.AddNucleusNumber(48);
+  titanium.AddPhotonEnergy(8312.0*eV, 1.0);
+  titanium.AddPhotonEnergy(14770.0*eV, 1.0);
+  titanium.AddPhotonEnergy(6467.0*eV, 1.0);
+  titanium.AddPhotonEnergy(11590.0*eV, 1.0);
+  titanium.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{22,nucleiImplemented.size()});
+  nucleiImplemented.push_back(titanium);
+//Molibden
+  KaonNucleusAbsLines molibden;
+  molibden.SetAtomicNumber(42);
+  molibden.AddNucleusNumber(96);
+  molibden.AddNucleusNumber(98);
+  molibden.AddPhotonEnergy(284000.0*eV, 1.0); // 6-->5
+  molibden.AddPhotonEnergy(514000.0*eV, 1.0); // 5-->4
+ // molibden.AddPhotonEnergy(0.0*eV, 1.0); // 4-->3
+ // molibden.AddPhotonEnergy(0.0*eV, 1.0); // 7-->6
+  molibden.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{22,nucleiImplemented.size()});
+  nucleiImplemented.push_back(molibden);
+//Lead
+  KaonNucleusAbsLines lead;
+  lead.SetAtomicNumber(82);
+  lead.AddNucleusNumber(206);
+  lead.AddNucleusNumber(207);
+  lead.AddNucleusNumber(208);
+  lead.AddPhotonEnergy(288822.0*eV, 1.0); // 3-->2
+  lead.AddPhotonEnergy(206593.0*eV, 1.0); // 4-->3
+  lead.AddPhotonEnergy(152855.0*eV, 1.0); // 5-->4
+  lead.AddPhotonEnergy(269114.0*eV, 1.0); // 6-->4
+  lead.AddPhotonEnergy(359448.0*eV, 1.0); // 5-->3
+  lead.AddPhotonEnergy(116259.0*eV, 1.0); // 6-->5
+  lead.AddPhotonEnergy(206736.0*eV, 1.0); // 7-->5
+  lead.SetSimType(AbsLineSimType::absSimulateAll);
+  atomicNumberVSnucleusRef.insert(std::pair{82,nucleiImplemented.size()});
+  nucleiImplemented.push_back(lead);     
 }

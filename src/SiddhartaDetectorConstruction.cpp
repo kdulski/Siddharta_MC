@@ -155,6 +155,10 @@ G4VPhysicalVolume* SiddhartaDetectorConstruction::Construct()
   G4Element* Cl = new G4Element("Chlorine","Cl", z=17., a=35.453*g/mole);
   G4Element* Co = new G4Element("Cobalt","Co", z=27., a=58.933200*g/mole);
   G4Element* Zn = new G4Element("Zinc", "Zn", z=30., a= 65.38*g/mole);
+  G4Element* Mo96 = new G4Element("Molibden96", "Mo", z=42., a= 95.95*g/mole);
+  G4Isotope* Moli98 = new G4Isotope("Moli98", 42, 98, 97.91*g/mole);
+  G4Element* Mo98 = new G4Element("Molibden98", "Mo98", 1);
+  Mo98->AddIsotope(Moli98, 1);
   G4Element* Cd = new G4Element("Cadmium", "Cd", z=48., a= 112.411*g/mole);
   G4Element* Te = new G4Element("Tellurium", "Te", z=52., a= 127.60*g/mole);
   G4Element* Sm = new G4Element("Samarium","Sm", z=62., a=150.36*g/mole);
@@ -337,6 +341,10 @@ G4VPhysicalVolume* SiddhartaDetectorConstruction::Construct()
 
   G4Material* HPGe = new G4Material("HPGe", density= 5.323*g/cm3,nel=1); // beware that density is at room temperature
   HPGe->AddElement(Ge, 1);
+  
+  G4Material* MoliTarget = new G4Material("Mo96Mo98", density=7.5*g/cm3, nel=2);
+  MoliTarget->AddElement(Mo96, 40.7*perCent);
+  MoliTarget->AddElement(Mo98, 59.3*perCent);
   
   G4MaterialTable matTable = *(G4Material::GetMaterialTable());
   analysis->histo->addMatIDFromString("G4_AIR");
@@ -1622,15 +1630,15 @@ G4VPhysicalVolume* SiddhartaDetectorConstruction::Construct()
   G4double posx_kldegBoost = posx_lumi_boost + 0.5*dz_lumi + lumi_al_dz + lumi_my_dz + lumi_pc_dz + 0.5*kldegBoost_z;
 
   /// KLIMAXTargetBoost
-  G4double dx_target_b = dx_lumi;
-  G4double dy_target_b = dz_lumi;
+  G4double dx_target_b = 40*mm;//dx_lumi;
+  G4double dy_target_b = 80*mm;//dz_lumi;
   G4double kltargetBoost_z = 1.5*mm;  //toreplace_b_target//
   G4double Lumi_Target_distBoost = 0.;
 
   G4double posx_kltargetBoost = posx_kldegBoost + 0.5*kldegBoost_z + Lumi_Target_distBoost + 0.5*kltargetBoost_z;
 
-  G4Box* solidKLIMAXTargetBoost = new G4Box("KLIMAXTargetBoost", 0.5*dx_lumi, 0.5*dy_lumi, 0.5*kltargetBoost_z);
-  G4LogicalVolume* logicKLIMAXTargetBoost = new G4LogicalVolume(solidKLIMAXTargetBoost, Pb, "World", 0, 0, 0);
+  G4Box* solidKLIMAXTargetBoost = new G4Box("KLIMAXTargetBoost", 0.5*dx_target_b, 0.5*dy_target_b, 0.5*kltargetBoost_z);
+  G4LogicalVolume* logicKLIMAXTargetBoost = new G4LogicalVolume(solidKLIMAXTargetBoost, MoliTarget, "World", 0, 0, 0);
   G4VPhysicalVolume* physiKLIMAXTargetBoost = new G4PVPlacement(rmY90, G4ThreeVector(posx_kltargetBoost, 0., 0.),
                                                                 logicKLIMAXTargetBoost, "KLIMAXTargetBoost", World, false, 0, true);
   logicKLIMAXTargetBoost->SetVisAttributes(G4Colour(0.,1.,1.));
@@ -1641,7 +1649,6 @@ G4VPhysicalVolume* SiddhartaDetectorConstruction::Construct()
   G4cout << "TARGET Z: " << -0.5*dx_lumi << " " << 0. << " " << 0.5*dx_lumi << G4endl;
 
 /// KLIMAXHPGeBoost
-
 
   G4double klHPGeBoost_rad = 59.8*mm;
   G4double klHPGeBoost_z = 59.3*mm;
